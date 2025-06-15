@@ -89,31 +89,31 @@ The color scheme is organized into three categories to define the visual identit
 
 The NutriConnect platform was built through the collaborative efforts of the following team members, leveraging the MVC architecture for a robust and scalable solution.
 
-### Pabbu Saketh (Roll No: S20230010169)
+### Pabbu Saketh 
 - Developed dashboards for users, admins, organizations, and dietitians.
 - Implemented verification workflows for organizations (by admins) and dietitians (by organizations).
 - Built daily progress tracking and personalized meal plan functionality.
 - **Schemas**: User, Organization, Admin, DietPlans, Progress.
 
-### Nerella Venkata Sri Ram (Roll No: S20230010164)
+### Nerella Venkata Sri Ram 
 - Created real-time chat interface with video conferencing integration for client-dietitian communication.
 - Built blog interface for URL/image uploads with thematic categorization.
 - Developed static chatbot handling 100–150 predefined queries.
 - **Schemas**: Chat, Chatbot, Blogs.
 
-### Inala Syama Sri Sai (Roll No: S20230010104)
+### Inala Syama Sri Sai
 - Implemented booking system with slot management and conflict prevention.
 - Developed diet plan search and dietitian filtering by language, fees, and location.
 - Added testimonial functionality for user feedback.
 - **Schemas**: Dietitian, DietitianInfo, BookedSlots.
 
-### Nulakajodu Maanas Anand (Roll No: S20230010166)
+### Nulakajodu Maanas Anand 
 - Built medical report submission and viewing pages with multi-file upload support.
 - Developed queries and contact us page with admin email responses via Outlook/Gmail.
 - Managed user-admin query handling.
 - **Schemas**: Queries, LabReports.
 
-### Nitta Pradeep (Roll No: S20230010165)
+### Nitta Pradeep 
 - Created pricing plans page (Basic, Premium, Ultimate) and consultation fees management.
 - Built admin revenue tracking for daily, monthly, and yearly reports.
 - Managed plan-based consultation and meal plan limits.
