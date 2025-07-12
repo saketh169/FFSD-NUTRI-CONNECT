@@ -11,7 +11,7 @@ const MongoStore = require('connect-mongo');
 const connectDB = require('./utils/db'); 
 
 const app = express();
-const PORT =  3500;
+const PORT =  4000;
 
 
 // Generate a strong 64-byte hex session secret
