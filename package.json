@@ -25,15 +25,12 @@
     "validator": "^13.15.0"
   },
   "scripts": {
-    "start": "node index.js",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "start": "node index.js"
   },
   "name": "project",
   "version": "1.0.0",
   "main": "index.js",
   "author": "",
   "license": "ISC",
-  "description": "",
-  "homepage": "https://saketh169.github.io/FFSD-NUTRI-CONNECT"
+  "description": ""
 }
