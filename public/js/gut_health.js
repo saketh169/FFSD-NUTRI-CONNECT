@@ -6,22 +6,33 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Fetch dietitians from MongoDB
     let dietitians = [];
     try {
-        const response = await fetch('/dietitians');
-        dietitians = await response.json();
-        // Filter for Gut Health specialists
-        dietitians = dietitians.filter(dietitian => 
-            dietitian.specialties.some(spec => 
-                ['IBS Management', 'GERD', 'Gut Microbiome', 'Food Sensitivities', 
-                 'Gut Inflammation', 'Leaky Gut Syndrome', 'IBD', 'Food Intolerances'].includes(spec)
-            )
-        );
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '/dietitians', true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        dietitians = JSON.parse(xhr.responseText);
+                        // Filter for Gut Health specialists
+                        dietitians = dietitians.filter(dietitian => 
+                            dietitian.specialties.some(spec => 
+                                ['IBS Management', 'GERD', 'Gut Microbiome', 'Food Sensitivities', 
+                                 'Gut Inflammation', 'Leaky Gut Syndrome', 'IBD', 'Food Intolerances'].includes(spec)
+                            )
+                        );
+                        displayDietitians(dietitians);
+                    } else {
+                        console.error('Error fetching dietitians:', xhr.statusText);
+                        showAlert('Error fetching dietitians', 'danger');
+                    }
+                }
+            };
+            xhr.send();
     } catch (error) {
         console.error('Error fetching dietitians:', error);
         showAlert('Error fetching dietitians', 'danger');
     }
 
-    // Display dietitians initially
-    displayDietitians(dietitians);
+        // Display dietitians will be called after XHR response.
 });
 
 // Global variables

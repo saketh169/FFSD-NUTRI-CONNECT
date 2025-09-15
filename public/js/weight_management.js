@@ -1,30 +1,40 @@
-document.addEventListener('DOMContentLoaded', async function() {
+document.addEventListener('DOMContentLoaded', function() {
     // Initialize booking sidebar
     initializeBookingSidebar();
     loadUserBookings();
 
     // Fetch dietitians from MongoDB
     let dietitians = [];
-    try {
-        const response = await fetch('/dietitians');
-        dietitians = await response.json();
-        // Filter for Weight Management specialists
-        dietitians = dietitians.filter(dietitian => 
-            dietitian.specialties.some(spec => 
-                ['Weight Loss', 'Weight Gain', 'Obesity Management', 'Metabolic Health', 
-                 'Mindful Eating', 'Sports Nutrition', 'Holistic Nutrition'].includes(spec)
-            )
-        );
-    } catch (error) {
-        console.error('Error fetching dietitians:', error);
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', '/dietitians', true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+                dietitians = JSON.parse(xhr.responseText);
+                // Filter for Weight Management specialists
+                dietitians = dietitians.filter(dietitian => 
+                    dietitian.specialties.some(spec => 
+                        ['Weight Loss', 'Weight Gain', 'Obesity Management', 'Metabolic Health', 
+                         'Mindful Eating', 'Sports Nutrition', 'Holistic Nutrition'].includes(spec)
+                    )
+                );
+                // Display dietitians initially
+                displayDietitians(dietitians);
+            } else {
+                console.error('Error fetching dietitians:', xhr.statusText);
+                showAlert('Error fetching dietitians', 'danger');
+            }
+        }
+    };
+    xhr.onerror = function() {
+        console.error('Error fetching dietitians:', xhr.statusText);
         showAlert('Error fetching dietitians', 'danger');
-    }
-
-    // Display dietitians initially
-    displayDietitians(dietitians);
+    };
+    xhr.send();
 });
 
-// Global variables
+// Global variables (unchanged)
 let currentDietitianId = null;
 let currentDietitianFees = null;
 let currentDietitianName = null;
@@ -35,7 +45,7 @@ let selectedDate = null;
 let selectedTime = null;
 let selectedPaymentMethod = null;
 
-// Initialize booking sidebar
+// Initialize booking sidebar (unchanged)
 function initializeBookingSidebar() {
     const bookingSidebar = document.querySelector('.booking-sidebar');
     const backButton = document.querySelector('.back-button');
@@ -58,7 +68,6 @@ function initializeBookingSidebar() {
     if (dateInput) {
         const today = new Date();
         const todayStr = today.toISOString().split('T')[0];
-        // Set max date to 3 weeks (21 days) from today
         const maxDate = new Date(today);
         maxDate.setDate(today.getDate() + 21);
         const maxDateStr = maxDate.toISOString().split('T')[0];
@@ -93,7 +102,6 @@ function initializeBookingSidebar() {
         confirmButton.disabled = true;
     }
 
-    // Add event listeners for payment modal
     const paymentModal = document.querySelector('#paymentModal');
     const closeModal = document.querySelector('.close-modal');
     const cancelPayment = document.querySelector('#cancelPayment');
@@ -139,43 +147,42 @@ async function checkBookingEligibility() {
         return;
     }
 
-    try {
-        const consultationType = document.querySelector('#consultationType').value;
-        const response = await fetch('/dietitians/book-slot', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                dietitianId: currentDietitianId,
-                date: selectedDate,
-                time: selectedTime,
-                consultationType
-            })
-        });
-
-        const data = await response.json();
-        if (!response.ok) {
-            if (data.error.includes('Maximum 4 bookings per day')) {
-                showAlert('Your maximum limit of 4 bookings per day is reached. Try another day.', 'danger');
+    const consultationType = document.querySelector('#consultationType').value;
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', '/dietitians/book-slot', true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+                const data = JSON.parse(xhr.responseText);
+                if (data.success) {
+                    showPaymentModal(currentDietitianFees, currentDietitianName, consultationType);
+                } else {
+                    showAlert(data.error || 'Cannot proceed with booking', 'danger');
+                }
             } else {
-                throw new Error(data.error || 'Eligibility check failed');
+                const data = JSON.parse(xhr.responseText || '{}');
+                if (data.error && data.error.includes('Maximum 4 bookings per day')) {
+                    showAlert('Your maximum limit of 4 bookings per day is reached. Try another day.', 'danger');
+                } else {
+                    showAlert(data.error || 'Eligibility check failed', 'danger');
+                }
             }
-            return;
         }
-
-        if (data.success) {
-            showPaymentModal(currentDietitianFees, currentDietitianName, consultationType);
-        } else {
-            showAlert(data.error || 'Cannot proceed with booking', 'danger');
-        }
-    } catch (error) {
-        console.error('Error checking booking eligibility:', error);
-        showAlert(error.message || 'Error checking booking eligibility', 'danger');
-    }
+    };
+    xhr.onerror = function() {
+        console.error('Error checking booking eligibility:', xhr.statusText);
+        showAlert('Error checking booking eligibility', 'danger');
+    };
+    xhr.send(JSON.stringify({
+        dietitianId: currentDietitianId,
+        date: selectedDate,
+        time: selectedTime,
+        consultationType
+    }));
 }
 
-// Update payment details based on selected payment method
+// Update payment details (unchanged)
 function updatePaymentDetails(method) {
     const paymentDetails = document.querySelector('#paymentDetails');
     paymentDetails.classList.remove('hidden');
@@ -215,7 +222,7 @@ function updatePaymentDetails(method) {
     }
 }
 
-// Show payment modal
+// Show payment modal (unchanged)
 function showPaymentModal(fees, dietitianName, consultationType) {
     const paymentModal = document.querySelector('#paymentModal');
     const paymentAmount = document.querySelector('#paymentAmount');
@@ -284,60 +291,59 @@ async function handlePayment() {
     const paymentId = `PAY-${Math.random().toString(36).substr(2, 9).toUpperCase()}`; // Simulated payment ID
 
     // Proceed to book appointment
-    try {
-        const consultationType = document.querySelector('#consultationType').value;
-        const response = await fetch('/dietitians/book-slot', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                dietitianId: currentDietitianId,
-                date: selectedDate,
-                time: selectedTime,
-                consultationType,
-                paymentId,
-                amount: currentDietitianFees,
-                paymentMethod
-            })
-        });
-
-        const data = await response.json();
-        if (!response.ok) {
-            if (data.error.includes('Maximum 4 bookings per day')) {
-                showAlert('Your maximum limit of 4 bookings per day is reached. Try another day.', 'danger');
+    const consultationType = document.querySelector('#consultationType').value;
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', '/dietitians/book-slot', true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+                const data = JSON.parse(xhr.responseText);
+                if (data.success && data.paymentStatus === 'success') {
+                    currentBookingId = data.booking._id;
+                    currentBookingDate = selectedDate;
+                    currentBookingTime = selectedTime;
+                    showBookingConfirmation(data.booking);
+                    showAlert('Payment and appointment booked successfully!', 'success');
+                    paymentModal.classList.add('hidden');
+                    resetPaymentForm();
+                    updateAvailableSlots(selectedDate);
+                } else {
+                    showAlert(`Payment failed: ${data.error || 'Error booking appointment'}`, 'danger');
+                }
             } else {
-                throw new Error(data.error || 'Booking failed');
+                const data = JSON.parse(xhr.responseText || '{}');
+                if (data.error && data.error.includes('Maximum 4 bookings per day')) {
+                    showAlert('Your maximum limit of 4 bookings per day is reached. Try another day.', 'danger');
+                } else {
+                    showAlert(data.error || 'Booking failed', 'danger');
+                }
             }
-            return;
         }
-
-        if (data.success && data.paymentStatus === 'success') {
-            currentBookingId = data.booking._id;
-            currentBookingDate = selectedDate;
-            currentBookingTime = selectedTime;
-            showBookingConfirmation(data.booking);
-            showAlert('Payment and appointment booked successfully!', 'success');
-            paymentModal.classList.add('hidden');
-            resetPaymentForm();
-            updateAvailableSlots(selectedDate);
-        } else {
-            showAlert(`Payment failed: ${data.error || 'Error booking appointment'}`, 'danger');
-        }
-    } catch (error) {
-        console.error('Error booking appointment:', error);
-        showAlert(`Payment failed: ${error.message || 'Error booking appointment'}`, 'danger');
-    }
+    };
+    xhr.onerror = function() {
+        console.error('Error booking appointment:', xhr.statusText);
+        showAlert('Payment failed: Error booking appointment', 'danger');
+    };
+    xhr.send(JSON.stringify({
+        dietitianId: currentDietitianId,
+        date: selectedDate,
+        time: selectedTime,
+        consultationType,
+        paymentId,
+        amount: currentDietitianFees,
+        paymentMethod
+    }));
 }
 
-// Show form error
+// Show form error (unchanged)
 function showFormError(message) {
     const formErrors = document.querySelector('#formErrors');
     formErrors.textContent = message;
     formErrors.classList.remove('hidden');
 }
 
-// Reset payment form
+// Reset payment form (unchanged)
 function resetPaymentForm() {
     const paymentForm = document.querySelector('#paymentForm');
     const formErrors = document.querySelector('#formErrors');
@@ -350,22 +356,30 @@ function resetPaymentForm() {
 
 // Load user's existing bookings
 async function loadUserBookings() {
-    try {
-        const response = await fetch('/bookings/user');
-        const data = await response.json();
-        
-        if (data.success) {
-            if (data.bookings.length > 0) {
-                const booking = data.bookings[0];
-                currentBookingId = booking._id;
-                currentBookingDate = booking.date;
-                currentBookingTime = booking.time;
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', '/bookings/user', true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+                const data = JSON.parse(xhr.responseText);
+                if (data.success && data.bookings.length > 0) {
+                    const booking = data.bookings[0];
+                    currentBookingId = booking._id;
+                    currentBookingDate = booking.date;
+                    currentBookingTime = booking.time;
+                }
+            } else {
+                console.error('Error loading bookings:', xhr.statusText);
+                showAlert('Error loading bookings', 'danger');
             }
         }
-    } catch (error) {
-        console.error('Error loading bookings:', error);
+    };
+    xhr.onerror = function() {
+        console.error('Error loading bookings:', xhr.statusText);
         showAlert('Error loading bookings', 'danger');
-    }
+    };
+    xhr.send();
 }
 
 // Update available slots based on selected date
@@ -428,51 +442,61 @@ async function updateAvailableSlots(date) {
         }
     }
 
-    try {
-        const response = await fetch(`/dietitians/${currentDietitianId}/slots?date=${date}`);
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Failed to fetch slots');
-        }
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', `/dietitians/${currentDietitianId}/slots?date=${date}`, true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+                const data = JSON.parse(xhr.responseText);
+                if (data.success) {
+                    let filteredSlots = data.availableSlots.filter(slot => {
+                        const [hour, minute] = slot.split(':').map(Number);
+                        const slotTimeValue = hour + minute / 60;
+                        return slotTimeValue <= 17; // Only include slots up to 17:00
+                    });
 
-        const data = await response.json();
-        if (data.success) {
-            let filteredSlots = data.availableSlots.filter(slot => {
-                const [hour, minute] = slot.split(':').map(Number);
-                const slotTimeValue = hour + minute / 60;
-                return slotTimeValue <= 17; // Only include slots up to 17:00
-            });
+                    if (date === todayStr) {
+                        const now = new Date();
+                        const currentHour = now.getHours();
+                        const currentMinute = now.getMinutes();
+                        const currentTimeValue = currentHour + currentMinute / 60;
 
-            if (date === todayStr) {
-                const now = new Date();
-                const currentHour = now.getHours();
-                const currentMinute = now.getMinutes();
-                const currentTimeValue = currentHour + currentMinute / 60;
+                        filteredSlots = filteredSlots.filter(slot => {
+                            const [hour, minute] = slot.split(':').map(Number);
+                            const slotTimeValue = hour + minute / 60;
+                            return slotTimeValue >= currentTimeValue; // Include slots after current time
+                        });
+                    }
 
-                filteredSlots = filteredSlots.filter(slot => {
-                    const [hour, minute] = slot.split(':').map(Number);
-                    const slotTimeValue = hour + minute / 60;
-                    return slotTimeValue >= currentTimeValue; // Include slots after current time
-                });
+                    displayTimeSlots(filteredSlots, data.bookedSlots);
+                } else {
+                    showAlert(data.error || 'Error loading slots', 'danger');
+                    morningSlotsDiv.innerHTML = '<p class="text-muted">No slots available</p>';
+                    afternoonSlotsDiv.innerHTML = '<p class="text-muted">No slots available</p>';
+                    eveningSlotsDiv.innerHTML = '<p class="text-muted">No slots available</p>';
+                }
+            } else {
+                const error = JSON.parse(xhr.responseText || '{}');
+                console.error('Error fetching slots:', error.error || xhr.statusText);
+                showAlert('Error loading slots', 'danger');
+                morningSlotsDiv.innerHTML = '<p class="text-muted">Error loading slots</p>';
+                afternoonSlotsDiv.innerHTML = '<p class="text-muted">Error loading slots</p>';
+                eveningSlotsDiv.innerHTML = '<p class="text-muted">Error loading slots</p>';
             }
-
-            displayTimeSlots(filteredSlots, data.bookedSlots);
-        } else {
-            showAlert(data.error || 'Error loading slots', 'danger');
-            morningSlotsDiv.innerHTML = '<p class="text-muted">No slots available</p>';
-            afternoonSlotsDiv.innerHTML = '<p class="text-muted">No slots available</p>';
-            eveningSlotsDiv.innerHTML = '<p class="text-muted">No slots available</p>';
         }
-    } catch (error) {
-        console.error('Error fetching slots:', error);
+    };
+    xhr.onerror = function() {
+        console.error('Error fetching slots:', xhr.statusText);
         showAlert('Error loading slots', 'danger');
         morningSlotsDiv.innerHTML = '<p class="text-muted">Error loading slots</p>';
         afternoonSlotsDiv.innerHTML = '<p class="text-muted">Error loading slots</p>';
         eveningSlotsDiv.innerHTML = '<p class="text-muted">Error loading slots</p>';
-    }
+    };
+    xhr.send();
 }
 
-// Display time slots
+// Display time slots (unchanged)
 function displayTimeSlots(availableSlots, bookedSlots) {
     const morningSlotsDiv = document.getElementById('morningSlots');
     const afternoonSlotsDiv = document.getElementById('afternoonSlots');
@@ -553,7 +577,7 @@ function displayTimeSlots(availableSlots, bookedSlots) {
         }
     });
 
-    // Add styles for slots, modal, sidebar, alerts, and confirmation
+    // Add styles for slots, modal, sidebar, alerts, and confirmation (unchanged)
     const style = document.createElement('style');
     style.textContent = `
          .booking-sidebar {
@@ -740,7 +764,7 @@ function displayTimeSlots(availableSlots, bookedSlots) {
     document.head.appendChild(style);
 }
 
-// Show booking confirmation
+// Show booking confirmation (unchanged)
 function showBookingConfirmation(booking) {
     const confirmation = document.querySelector('#confirmation');
     if (!confirmation) return;
@@ -772,38 +796,39 @@ async function cancelBooking() {
         return;
     }
 
-    try {
-        const response = await fetch(`/bookings/${currentBookingId}/cancel`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `/bookings/${currentBookingId}/cancel`, true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+                const data = JSON.parse(xhr.responseText);
+                if (data.success) {
+                    currentBookingId = null;
+                    currentBookingDate = null;
+                    currentBookingTime = null;
+                    document.querySelector('#confirmation').classList.add('hidden');
+                    showAlert('Appointment cancelled successfully', 'success');
+                    resetBookingForm();
+                    updateAvailableSlots(selectedDate);
+                } else {
+                    showAlert(data.error || 'Error cancelling appointment', 'danger');
+                }
+            } else {
+                const error = JSON.parse(xhr.responseText || '{}');
+                console.error('Error cancelling appointment:', error.error || xhr.statusText);
+                showAlert(error.error || 'Error cancelling appointment', 'danger');
             }
-        });
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Cancellation failed');
         }
-
-        const data = await response.json();
-        if (data.success) {
-            currentBookingId = null;
-            currentBookingDate = null;
-            currentBookingTime = null;
-            document.querySelector('#confirmation').classList.add('hidden');
-            showAlert('Appointment cancelled successfully', 'success');
-            resetBookingForm();
-            updateAvailableSlots(selectedDate);
-        } else {
-            showAlert(data.error || 'Error cancelling appointment', 'danger');
-        }
-    } catch (error) {
-        console.error('Error cancelling appointment:', error);
-        showAlert(error.message || 'Error cancelling appointment', 'danger');
-    }
+    };
+    xhr.onerror = function() {
+        console.error('Error cancelling appointment:', xhr.statusText);
+        showAlert('Error cancelling appointment', 'danger');
+    };
+    xhr.send();
 }
 
-// Reset booking form
+// Reset booking form (unchanged)
 function resetBookingForm() {
     selectedDate = null;
     selectedTime = null;
@@ -820,7 +845,7 @@ function resetBookingForm() {
     updateAvailableSlots(today);
 }
 
-// Show alert message
+// Show alert message (unchanged)
 function showAlert(message, type) {
     const alertDiv = document.createElement('div');
     alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
@@ -836,13 +861,13 @@ function showAlert(message, type) {
     }, 5000);
 }
 
-// Format date for display
+// Format date for display (unchanged)
 function formatDate(dateString) {
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);
 }
 
-// Open booking sidebar
+// Open booking sidebar (unchanged)
 function openBookingSidebar(dietitianId, fees, dietitianName) {
     currentDietitianId = dietitianId;
     currentDietitianFees = fees;
@@ -851,18 +876,18 @@ function openBookingSidebar(dietitianId, fees, dietitianName) {
     resetBookingForm();
 }
 
-// Hide booking sidebar
+// Hide booking sidebar (unchanged)
 function hideBookingSidebar() {
     document.querySelector('.booking-sidebar').classList.remove('active');
     resetBookingForm();
 }
 
-// Hide notification
+// Hide notification (unchanged)
 function hideNotification() {
     document.getElementById('notification').classList.remove('show');
 }
 
-// Display dietitians based on filters
+// Display dietitians based on filters (unchanged)
 function displayDietitians(filteredDietitians) {
     const nutritionistList = document.getElementById('nutritionistList');
     nutritionistList.innerHTML = '';
@@ -916,7 +941,7 @@ function displayDietitians(filteredDietitians) {
     });
 }
 
-// Function to add event listeners to card elements
+// Function to add event listeners to card elements (unchanged)
 function addCardEventListeners(card, dietitian) {
     const bookButton = card.querySelector('.book-btn');
     bookButton.addEventListener('click', () => {
@@ -924,7 +949,7 @@ function addCardEventListeners(card, dietitian) {
     });
 }
 
-// Function to add card styles
+// Function to add card styles (unchanged)
 function addCardStyles(document) {
     const style = document.createElement('style');
     style.textContent = `
@@ -974,59 +999,69 @@ window.applyFilters = function() {
     const ratings = Array.from(document.querySelectorAll('input[name="rating"]:checked')).map(el => parseInt(el.value));
     const location = document.getElementById('locationInput').value.trim().toLowerCase();
     
-    fetch('/dietitians')
-        .then(response => response.json())
-        .then(dietitians => {
-            const filteredDietitians = dietitians.filter(dietitian => {
-                // Filter by specialization
-                if (specializations.length > 0 && !dietitian.specialties.some(spec => specializations.includes(spec))) {
-                    return false;
-                }
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', '/dietitians', true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+                const dietitians = JSON.parse(xhr.responseText);
+                const filteredDietitians = dietitians.filter(dietitian => {
+                    // Filter by specialization
+                    if (specializations.length > 0 && !dietitian.specialties.some(spec => specializations.includes(spec))) {
+                        return false;
+                    }
+                    
+                    // Filter by mode
+                    if (modes.length > 0) {
+                        if (modes.includes('online') && !dietitian.online) return false;
+                        if (modes.includes('offline') && !dietitian.offline) return false;
+                    }
+                    
+                    // Filter by experience
+                    if (experiences.length > 0 && !experiences.some(exp => dietitian.experience >= exp)) {
+                        return false;
+                    }
+                    
+                    // Filter by fees
+                    if (fees.length > 0 && !fees.some(fee => dietitian.fees <= fee)) {
+                        return false;
+                    }
+                    
+                    // Filter by language
+                    if (languages.length > 0 && !dietitian.languages.some(lang => languages.includes(lang))) {
+                        return false;
+                    }
+                    
+                    // Filter by rating
+                    if (ratings.length > 0 && !ratings.some(rating => dietitian.rating >= rating)) {
+                        return false;
+                    }
+                    
+                    // Filter by location
+                    if (location && !dietitian.location.toLowerCase().includes(location)) {
+                        return false;
+                    }
+                    
+                    // Ensure dietitian specializes in Weight Management
+                    return dietitian.specialties.some(spec => 
+                        ['Weight Loss', 'Weight Gain', 'Obesity Management', 'Metabolic Health', 
+                         'Mindful Eating', 'Sports Nutrition', 'Holistic Nutrition'].includes(spec)
+                    );
+                });
                 
-                // Filter by mode
-                if (modes.length > 0) {
-                    if (modes.includes('online') && !dietitian.online) return false;
-                    if (modes.includes('offline') && !dietitian.offline) return false;
-                }
-                
-                // Filter by experience
-                if (experiences.length > 0 && !experiences.some(exp => dietitian.experience >= exp)) {
-                    return false;
-                }
-                
-                // Filter by fees
-                if (fees.length > 0 && !fees.some(fee => dietitian.fees <= fee)) {
-                    return false;
-                }
-                
-                // Filter by language
-                if (languages.length > 0 && !dietitian.languages.some(lang => languages.includes(lang))) {
-                    return false;
-                }
-                
-                // Filter by rating
-                if (ratings.length > 0 && !ratings.some(rating => dietitian.rating >= rating)) {
-                    return false;
-                }
-                
-                // Filter by location
-                if (location && !dietitian.location.toLowerCase().includes(location)) {
-                    return false;
-                }
-                
-                // Ensure dietitian specializes in Weight Management
-                return dietitian.specialties.some(spec => 
-                    ['Weight Loss', 'Weight Gain', 'Obesity Management', 'Metabolic Health', 
-                     'Mindful Eating', 'Sports Nutrition', 'Holistic Nutrition'].includes(spec)
-                );
-            });
-            
-            displayDietitians(filteredDietitians);
-        })
-        .catch(error => {
-            console.error('Error fetching dietitians:', error);
-            showAlert('Error applying filters', 'danger');
-        });
+                displayDietitians(filteredDietitians);
+            } else {
+                console.error('Error fetching dietitians:', xhr.statusText);
+                showAlert('Error applying filters', 'danger');
+            }
+        }
+    };
+    xhr.onerror = function() {
+        console.error('Error fetching dietitians:', xhr.statusText);
+        showAlert('Error applying filters', 'danger');
+    };
+    xhr.send();
 };
 
 // Function to clear filters
@@ -1035,19 +1070,30 @@ window.clearFilters = function() {
         checkbox.checked = false;
     });
     document.getElementById('locationInput').value = '';
-    fetch('/dietitians')
-        .then(response => response.json())
-        .then(dietitians => {
-            const filteredDietitians = dietitians.filter(dietitian => 
-                dietitian.specialties.some(spec => 
-                    ['Weight Loss', 'Weight Gain', 'Obesity Management', 'Metabolic Health', 
-                     'Mindful Eating', 'Sports Nutrition', 'Holistic Nutrition'].includes(spec)
-                )
-            );
-            displayDietitians(filteredDietitians);
-        })
-        .catch(error => {
-            console.error('Error clearing filters:', error);
-            showAlert('Error clearing filters', 'danger');
-        });
+    
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', '/dietitians', true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+                const dietitians = JSON.parse(xhr.responseText);
+                const filteredDietitians = dietitians.filter(dietitian => 
+                    dietitian.specialties.some(spec => 
+                        ['Weight Loss', 'Weight Gain', 'Obesity Management', 'Metabolic Health', 
+                         'Mindful Eating', 'Sports Nutrition', 'Holistic Nutrition'].includes(spec)
+                    )
+                );
+                displayDietitians(filteredDietitians);
+            } else {
+                console.error('Error clearing filters:', xhr.statusText);
+                showAlert('Error clearing filters', 'danger');
+            }
+        }
+    };
+    xhr.onerror = function() {
+        console.error('Error clearing filters:', xhr.statusText);
+        showAlert('Error clearing filters', 'danger');
+    };
+    xhr.send();
 };
