@@ -97,6 +97,6 @@ async function markPastBookingsAsCompleted() {
 }
 
 // Run the function immediately when the module is loaded
-markPastBookingsAsCompleted();
+// markPastBookingsAsCompleted();
 
 module.exports = { BookedSlots };
