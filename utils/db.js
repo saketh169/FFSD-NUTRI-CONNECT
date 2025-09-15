@@ -2,10 +2,14 @@ const mongoose = require('mongoose');
 
 const connectDB = async () => {
   try {
-    await mongoose.connect('mongodb://localhost:27017/NutriConnectDB');
-    console.log('✅ MongoDB Connected Successfully!\n');
+    const MONGODB_URI = process.env.MONGO_URL;
+    if (!MONGODB_URI) {
+      throw new Error('MONGODB_URI is not defined');
+    }
+    await mongoose.connect(MONGODB_URI);
+    console.log('✅ MongoDB Connected Successfully!');
   } catch (err) {
-    console.error('❌ Mongo DB Connection Error:', err.message);
+    console.error('❌ MongoDB Connection Failed:', err.message);
     process.exit(1);
   }
 };
