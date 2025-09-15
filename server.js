@@ -13,7 +13,7 @@ require('dotenv').config({
 const app = express();
 
 // Use environment variables
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT
 const MONGODB_URI = process.env.MONGO_URL;
 const NODE_ENV = process.env.NODE_ENV ;
 

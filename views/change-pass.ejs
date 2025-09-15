@@ -210,6 +210,11 @@
             font-size: 1.2rem;
         }
 
+        #verifyBtn{
+            width: 100px;
+            height: 40px;
+        }
+
         .error-message {
             color: var(--error-color);
             font-size: 0.9rem;
@@ -295,6 +300,8 @@
                 font-size: 1rem;
             }
         }
+
+        
     </style>
 </head>
 <body>
@@ -318,6 +325,7 @@
                         <i class="fas fa-eye"></i>
                     </button>
                 </div>
+                <button type="button" class="btn btn-primary mt-2" id="verifyBtn">Verify</button>
                 <div class="error-message" id="currentPasswordError"></div>
             </div>
 
@@ -365,6 +373,7 @@
         const newPasswordInput = document.getElementById('newPassword');
         const confirmPasswordInput = document.getElementById('confirmPassword');
         const submitBtn = document.getElementById('submitBtn');
+        const verifyBtn = document.getElementById('verifyBtn');
         const strengthMeter = document.getElementById('strengthMeter');
         const togglePasswordButtons = document.querySelectorAll('.toggle-password');
         const notificationContainer = document.getElementById('notification-container');
@@ -454,20 +463,17 @@
             }
         }
 
-        // Enable new password fields after verification on Enter key press
-        currentPasswordInput.addEventListener('keypress', async (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                const isVerified = await verifyCurrentPassword();
-                if (isVerified) {
-                    newPasswordInput.disabled = false;
-                    confirmPasswordInput.disabled = false;
-                    submitBtn.disabled = false;
-                } else {
-                    newPasswordInput.disabled = true;
-                    confirmPasswordInput.disabled = true;
-                    submitBtn.disabled = true;
-                }
+        // Verify button click event
+        verifyBtn.addEventListener('click', async () => {
+            const isVerified = await verifyCurrentPassword();
+            if (isVerified) {
+                newPasswordInput.disabled = false;
+                confirmPasswordInput.disabled = false;
+                submitBtn.disabled = false;
+            } else {
+                newPasswordInput.disabled = true;
+                confirmPasswordInput.disabled = true;
+                submitBtn.disabled = true;
             }
         });
 
