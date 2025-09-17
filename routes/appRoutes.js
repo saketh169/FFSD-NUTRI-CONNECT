@@ -15,7 +15,7 @@ router.use(express.static(publicPath));
 
 // List of public routes
 const publicRoutes = ["/", "/blog", "/contact", "/roles_signin", "/roles_signup", "/post", 
-  "/submit", "/blog/:id", "/blog-submit", "/Sign_in", "/Sign_up", "/chatbot", 
+  "/submit", "/blog/:id", "/blog-submit", "/Sign_in", "/Sign_up", "/chatbot", "/chatbot/ask" ,
   "/privacy-policy", "/terms_conditions"];
 
 // Middleware to check if the route is public or protected

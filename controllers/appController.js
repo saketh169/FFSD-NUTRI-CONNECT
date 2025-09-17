@@ -16,52 +16,58 @@ exports.getChatbot = (req, res) => {
 
 // Chatbot Ask Route with Keyword-Based Matching
 exports.postChatbotAsk = async (req, res) => {
-  let userMessage = req.body.message.toLowerCase().trim();
+ let userMessage = req.body.message.toLowerCase().trim();
+  // Remove punctuation from user input
   userMessage = userMessage.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?'"]/g, '');
 
   try {
-    const questions = await Question.find({});
-    const stopWords = new Set([
-      'what', 'is', 'a', 'the', 'how', 'can', 'i', 'should', 'are', 'do',
-      'for', 'in', 'to', 'with', 'on', 'of', 'my', 'more', 'get', 'eat'
-    ]);
+      // Fetch all questions from the database
+      const questions = await Question.find({});
+      const stopWords = new Set([
+          'what', 'is', 'a', 'the', 'how', 'can', 'i', 'should', 'are', 'do',
+          'for', 'in', 'to', 'with', 'on', 'of', 'my', 'more', 'get', 'eat'
+      ]);
 
-    const userWords = userMessage.split(/\s+/);
-    const userKeywords = userWords.filter(word => !stopWords.has(word) && word.length > 2);
+      // Process user message into keywords
+      const userWords = userMessage.split(/\s+/);
+      const userKeywords = userWords.filter(word => !stopWords.has(word) && word.length > 2);
 
-    if (userKeywords.length === 0) {
-      return res.json({ reply: "I’m not sure about that. Try asking something like 'What is a balanced diet?'" });
-    }
-
-    let bestMatch = null;
-    let highestScore = 0;
-
-    for (const q of questions) {
-      const storedQuestion = q.question.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?'"]/g, '');
-      const questionWords = storedQuestion.split(/\s+/);
-      const questionKeywords = questionWords.filter(word => !stopWords.has(word) && word.length > 2);
-
-      let matchScore = 0;
-      for (const userKeyword of userKeywords) {
-        if (questionKeywords.includes(userKeyword)) {
-          matchScore++;
-        }
+      if (userKeywords.length === 0) {
+          return res.json({ reply: "I’m not sure about that. Try asking something like 'What is a balanced diet?'" });
       }
 
-      if (matchScore > highestScore) {
-        highestScore = matchScore;
-        bestMatch = q;
-      }
-    }
+      // Find the best matching question based on keyword overlap
+      let bestMatch = null;
+      let highestScore = 0;
 
-    if (bestMatch && highestScore > 0) {
-      res.json({ reply: bestMatch.answer });
-    } else {
-      res.json({ reply: "I'm not sure about that. Try asking something like 'What is a balanced diet?'" });
-    }
+      for (const q of questions) {
+    
+          const storedQuestion = q.question.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?'"]/g, '');
+          const questionWords = storedQuestion.split(/\s+/);
+          const questionKeywords = questionWords.filter(word => !stopWords.has(word) && word.length > 2);
+
+          let matchScore = 0;
+          for (const userKeyword of userKeywords) {
+              if (questionKeywords.includes(userKeyword)) {
+                  matchScore++;
+              }
+          }
+
+          // Update best match if this question has a higher score
+          if (matchScore > highestScore) {
+              highestScore = matchScore;
+              bestMatch = q;
+          }
+      }
+
+      if (bestMatch && highestScore > 0) {
+          res.json({ reply: bestMatch.answer });
+      } else {
+          res.json({ reply: "I'm not sure about that. Try asking something like 'What is a balanced diet?'" });
+      }
   } catch (err) {
-    console.error('Error fetching chatbot response:', err);
-    res.status(500).json({ reply: 'Sorry, something went wrong. Please try again!' });
+      console.error('Error fetching chatbot response:', err);
+      res.status(500).json({ reply: 'Sorry, something went wrong. Please try again!' });
   }
 };
 
