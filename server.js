@@ -65,8 +65,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 connectDB();
 
 // Import routes
-const dietitianRoutes = require('./controllers/dietitianController');
-const dietitianInfoRoutes = require('./controllers/dietitianInfoController');
+const dietitianRoutes = require('./routes/dietitianRoutes');
+const dietitianInfoRoutes = require('./routes/dietitianInfoRoutes');
 const authRoutes = require('./routes/authRoutes'); 
 const appRoutes = require('./routes/appRoutes');
 const dietitianverifyApp = require('./routes/verifydietitianRoutes');
