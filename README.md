@@ -1,4 +1,4 @@
-# NutriConnect
+# FFSD-NUTRI-CONNECT
 
 **A web-based platform connecting individuals with dietitians and nutritionists for personalized dietary guidance and wellness.**
 
