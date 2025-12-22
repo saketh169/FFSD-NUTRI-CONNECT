@@ -19,11 +19,11 @@ const handleMulterError = (err, req, res, next) => {
 };
 
 
-// Create uploads directory if it doesn't exist
-const uploadDir = path.join(__dirname, '../Uploads');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
+// // Create uploads directory if it doesn't exist
+// const uploadDir = path.join(__dirname, '../Uploads');
+// if (!fs.existsSync(uploadDir)) {
+//   fs.mkdirSync(uploadDir, { recursive: true });
+// }
 
 // Configure multer for file uploads
 const storage = multer.memoryStorage();
