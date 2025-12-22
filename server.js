@@ -6,32 +6,14 @@ const crypto = require('crypto');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const connectDB = require('./utils/db'); 
-
-// Load .env file only in local development
-// On Vercel, use dashboard environment variables
-if (process.env.NODE_ENV !== 'production') {
-  require('dotenv').config({ 
-    path: path.join(__dirname, 'utils', '.env') 
-  });
-}
+require('dotenv').config({ 
+  path: path.join(__dirname, 'utils', '.env') 
+});
 
 const app = express();
 
-// Validate required environment variables
-const requiredEnvVars = ['MONGO_URL'];
-const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
-
-if (missingEnvVars.length > 0) {
-  console.error('❌ ERROR: Missing required environment variables:');
-  missingEnvVars.forEach(envVar => {
-    console.error(`   - ${envVar}`);
-  });
-  console.error('\n📋 Add these to your Vercel dashboard under Settings > Environment Variables');
-  process.exit(1);
-}
-
 // Use environment variables
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT
 const MONGODB_URI = process.env.MONGO_URL;
 const NODE_ENV = process.env.NODE_ENV ;
 
