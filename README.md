@@ -4,6 +4,15 @@
 
 ---
 
+## Deployment
+
+The MVC application is deployed on the following platforms:
+
+- **Vercel**: https://your-app-name.vercel.app
+
+- **Render**: https://ffsd-nutri-connect.onrender.com
+---
+
 ## Overview
 
 NutriConnect empowers users to achieve their fitness and wellness goals through personalized meal plans, professional consultations, and seamless nutrition tracking. Built with the **MVC (Model-View-Controller)** architecture, the platform ensures modular, scalable, and user-friendly development. It fosters effective communication between users, dietitians, admins, and organizations, providing educational resources and intuitive interfaces for informed dietary choices.
