@@ -1,7 +1,7 @@
 // controllers/blogController.js
 const Blog = require('../models/blogModel');
 const mongoose = require('mongoose');
-const fs = require('fs');
+const cloudinary = require('../config/cloudStorage');
 const sanitizeHtml = require('sanitize-html');
 
 exports.getBlog = async (req, res) => {
@@ -41,21 +41,20 @@ exports.getPost = (req, res) => {
   res.render("post");
 };
 
+/**
+ * Upload blog images to Cloudinary and create blog post
+ * Supports both uploaded files and external image URLs
+ */
 exports.postBlogSubmit = async (req, res) => {
   try {
     const { title, content, imageUrls, theme } = req.body;
 
+    // Validate required fields
     if (!title || !content || !theme) {
-      if (req.files && req.files.length > 0) {
-        req.files.forEach(file => {
-          fs.unlink(file.path, (err) => {
-            if (err) console.error(`Failed to delete file ${file.path}:`, err);
-          });
-        });
-      }
       return res.status(400).redirect("/post?error=Missing+required+fields");
     }
 
+    // Get author information from session
     let authorType, authorId, authorName, authorEmail;
     if (req.session.user) {
       authorType = 'user';
@@ -82,10 +81,34 @@ exports.postBlogSubmit = async (req, res) => {
     }
 
     let imagePaths = [];
+
+    // Upload files to Cloudinary if provided
     if (req.files && req.files.length > 0) {
-      imagePaths = req.files.map(file => `/blog-images/${file.filename}`);
+      for (const file of req.files) {
+        try {
+          const result = await new Promise((resolve, reject) => {
+            const stream = cloudinary.uploader.upload_stream(
+              {
+                folder: 'nutri-connect/blogs',
+                resource_type: 'auto',
+                public_id: `blog-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+              },
+              (error, result) => {
+                if (error) reject(error);
+                else resolve(result);
+              }
+            );
+            stream.end(file.buffer);
+          });
+          imagePaths.push(result.secure_url);
+        } catch (uploadError) {
+          console.error(`Error uploading image to Cloudinary:`, uploadError);
+          return res.status(500).redirect("/post?error=Image+upload+failed");
+        }
+      }
     }
 
+    // Add external image URLs if provided
     if (imageUrls) {
       const urls = Array.isArray(imageUrls) ? imageUrls : [imageUrls];
       for (const url of urls) {
@@ -98,6 +121,7 @@ exports.postBlogSubmit = async (req, res) => {
       }
     }
 
+    // Create and save blog post
     const newBlog = new Blog({
       title: sanitizeHtml(title),
       content: sanitizeHtml(content, {
@@ -119,13 +143,6 @@ exports.postBlogSubmit = async (req, res) => {
     res.redirect(`/blog/${newBlog._id}`);
   } catch (error) {
     console.error("Error submitting blog:", error);
-    if (req.files && req.files.length > 0) {
-      req.files.forEach(file => {
-        fs.unlink(file.path, (err) => {
-          if (err) console.error(`Failed to delete file ${file.path}:`, err);
-        });
-      });
-    }
     res.status(500).redirect("/post?error=Server+error");
   }
 };

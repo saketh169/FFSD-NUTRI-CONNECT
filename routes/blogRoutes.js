@@ -2,38 +2,17 @@
 const express = require("express");
 const path = require("path");
 const multer = require("multer");
-const fs = require("fs");
 const router = express.Router();
 const { blogAuthenticated, checkPublicRoute } = require('../middlewares/blogMiddleware');
 const blogController = require('../controllers/blogController');
 
-// Define the path to the public folder
-const publicPath = path.join(__dirname, '..', 'public');
-const uploadDir = path.join(publicPath, 'blog-images');
-
-// Create the uploads directory if it doesn't exist
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-// Multer configuration for blog images
-const blogImagesStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
-  }
-});
+// Multer configuration for blog images (memory storage for cloud upload)
+const storage = multer.memoryStorage();
 
 const uploadBlogImages = multer({
-  storage: blogImagesStorage,
+  storage: storage,
   limits: { fileSize: 5 * 1024 * 1024 } // 5MB
 }).array('images', 5);
-
-// Serve static blog images
-router.use("/blog-images", express.static(uploadDir));
 
 // Apply public route middleware
 router.use(checkPublicRoute);
