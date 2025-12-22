@@ -113,10 +113,11 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start the server
-
-app.listen(PORT, () => {
-  console.log(`Server is running at http://localhost:${PORT} in ${NODE_ENV} mode`);
-});
+// Start the server only for local development
+if (NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`Server is running at http://localhost:${PORT} in ${NODE_ENV} mode`);
+  });
+}
 
 module.exports = app;
