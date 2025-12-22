@@ -3,15 +3,22 @@ const mongoose = require('mongoose');
 const connectDB = async () => {
   try {
     const MONGODB_URI = process.env.MONGO_URL;
+    
     if (!MONGODB_URI) {
-      throw new Error('MONGODB_URI is not defined');
+      throw new Error('MONGO_URL environment variable is not defined. Please set it in your Vercel dashboard under Settings > Environment Variables');
     }
-    await mongoose.connect(MONGODB_URI);
+    
+    await mongoose.connect(MONGODB_URI, {
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000
+    });
     console.log('✅ MongoDB Connected Successfully!');
   } catch (err) {
     console.error('❌ MongoDB Connection Failed:', err.message);
-    // Removed process.exit(1) to prevent serverless function crash
-    // In serverless, log the error and continue; DB operations may fail
+    // In production, we should fail fast
+    if (process.env.NODE_ENV === 'production') {
+      process.exit(1);
+    }
   }
 };
 

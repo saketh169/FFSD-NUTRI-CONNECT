@@ -15,7 +15,20 @@
 
 const cloudinary = require('cloudinary').v2;
 
-// Configure Cloudinary
+// Validate Cloudinary environment variables
+const requiredCloudinaryVars = ['CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET'];
+const missingVars = requiredCloudinaryVars.filter(varName => !process.env[varName]);
+
+if (missingVars.length > 0 && process.env.NODE_ENV === 'production') {
+  console.warn('⚠️ WARNING: Missing Cloudinary environment variables:');
+  missingVars.forEach(varName => {
+    console.warn(`   - ${varName}`);
+  });
+  console.warn('\n📋 Add these to your Vercel dashboard under Settings > Environment Variables');
+  console.warn('📌 Cloudinary site: https://cloudinary.com/console/settings/api-keys');
+}
+
+// Configure Cloudinary with environment variables
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
