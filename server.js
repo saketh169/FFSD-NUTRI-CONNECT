@@ -118,10 +118,6 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Root route for health check
-app.get('/', (req, res) => {
-  res.status(200).json({ status: 'ok', message: 'Nutri-Connect Backend Server is running' });
-});
 
 // 404 handler for API routes
 app.use((req, res) => {
