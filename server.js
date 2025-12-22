@@ -64,6 +64,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Connect to MongoDB
 connectDB();
 
+// Health check route
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'ok', message: 'Server is running' });
+});
+
 // Import routes
 const dietitianRoutes = require('./routes/dietitianRoutes');
 const dietitianInfoRoutes = require('./routes/dietitianInfoRoutes');
@@ -113,11 +118,20 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start the server only for local development
-// if (NODE_ENV !== 'production') {
-//   app.listen(PORT, () => {
-//     console.log(`Server is running at http://localhost:${PORT} in ${NODE_ENV} mode`);
-//   });
-// }
+// Root route for health check
+app.get('/', (req, res) => {
+  res.status(200).json({ status: 'ok', message: 'Nutri-Connect Backend Server is running' });
+});
+
+// 404 handler for API routes
+app.use((req, res) => {
+  res.status(404).json({ error: 'Route not found', path: req.path });
+});
+
+// Start the server
+
+app.listen(PORT, () => {
+  console.log(`Server is running at http://localhost:${PORT} in ${NODE_ENV} mode`);
+});
 
 module.exports = app;
