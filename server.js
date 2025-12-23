@@ -12,7 +12,7 @@ require('dotenv').config({
 const app = express();
 
 // Trust proxy for production (required for Vercel, Heroku, etc.)
-// app.set('trust proxy', 1);
+app.set('trust proxy', 1);
 
 // Use environment variables
 const PORT = process.env.PORT
