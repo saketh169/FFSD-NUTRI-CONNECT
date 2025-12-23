@@ -45,7 +45,7 @@ app.use(session({
     maxAge: 24 * 60 * 60 * 1000, // 1 day
     httpOnly: true,
     sameSite: NODE_ENV === 'production' ? 'none' : 'lax',
-    domain: NODE_ENV === 'production' ? process.env.DOMAIN : undefined
+    //domain: NODE_ENV === 'production' ? process.env.DOMAIN : undefined
   },
   store: MongoStore.create({
     mongoUrl: MONGODB_URI,
