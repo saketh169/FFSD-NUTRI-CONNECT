@@ -5,6 +5,7 @@ const cors = require('cors');
 const crypto = require('crypto');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
+const mongoose = require('mongoose');
 const connectDB = require('./utils/db'); 
 require('dotenv').config();
 
@@ -28,6 +29,10 @@ if (!process.env.SESSION_SECRET) {
   console.log('⚠️ For production, set SESSION_SECRET in .env file instead!');
 }
 
+// Connect to MongoDB
+const startServer = async () => {
+  await connectDB();
+
 // Session Configuration
 app.use(session({
   secret: SESSION_SECRET,
@@ -40,10 +45,8 @@ app.use(session({
     sameSite: 'strict'
   },
   store: MongoStore.create({
-    mongoUrl: MONGODB_URI,
-    ttl: 14 * 24 * 60 * 60, // 14 days
-    autoRemove: 'interval',
-    autoRemoveInterval: 60 // Minutes
+    client: mongoose.connection.getClient(), 
+    ttl: 14 * 24 * 60 * 60
   })
 }));
 
@@ -58,9 +61,6 @@ app.set('views', path.join(__dirname, 'views'));
 
 // Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
-
-// Connect to MongoDB
-connectDB();
 
 // Health check route
 app.get('/api/health', (req, res) => {
@@ -129,5 +129,8 @@ app.use((req, res) => {
 app.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT} in ${NODE_ENV} mode`);
 });
+};
+
+startServer().catch(err => console.error('Failed to start server:', err));
 
 module.exports = app;
