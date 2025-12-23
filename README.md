@@ -8,7 +8,7 @@
 
 The MVC application is deployed on the following platforms:
 
-- **Vercel**: https://your-app-name.vercel.app
+- **Vercel**: https://ffsd-nutri-connect.vercel.app/
 
 - **Render**: https://ffsd-nutri-connect.onrender.com
 ---
