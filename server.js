@@ -27,10 +27,10 @@ const NODE_ENV = process.env.NODE_ENV ;
 const SESSION_SECRET = process.env.SESSION_SECRET ;
 
 // Log the generated secret (remove in production)
-if (!process.env.SESSION_SECRET) {
-  console.log('\n🔑 Generated Session Secret:', SESSION_SECRET);
-  console.log('⚠️ For production, set SESSION_SECRET in .env file instead!');
-}
+// if (!process.env.SESSION_SECRET) {
+//   console.log('\n🔑 Generated Session Secret:', SESSION_SECRET);
+//   console.log('⚠️ For production, set SESSION_SECRET in .env file instead!');
+// }
 
 // Session Configuration
 app.use(session({
@@ -45,13 +45,12 @@ app.use(session({
     maxAge: 24 * 60 * 60 * 1000, // 1 day
     httpOnly: true,
     sameSite: NODE_ENV === 'production' ? 'none' : 'lax',
-    //domain: NODE_ENV === 'production' ? process.env.DOMAIN : undefined
   },
   store: MongoStore.create({
     mongoUrl: MONGODB_URI,
-    ttl: 24 * 60 * 60, // 1 day - must match cookie maxAge
+    ttl: 24 * 60 * 60, // 1 day - Match cookie maxAge
     autoRemove: 'interval',
-    autoRemoveInterval: 60, // Minutes
+    autoRemoveInterval: 60, 
     touchAfter: 24 * 3600 // Lazy session update
   })
 }));
