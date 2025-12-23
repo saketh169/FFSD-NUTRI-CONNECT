@@ -12,9 +12,6 @@ require('dotenv').config({
 
 const app = express();
 
-// Trust proxy for production (required for Vercel, Heroku, etc.)
-app.set('trust proxy', 1);
-
 // Use environment variables
 const PORT = process.env.PORT
 const MONGODB_URI = process.env.MONGODB_URL;
@@ -35,25 +32,20 @@ if (!process.env.SESSION_SECRET) {
 
 // Session Configuration
 app.use(session({
-  name: 'sessionId',
   secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  rolling: true,
-  proxy: NODE_ENV === 'production',
   cookie: {
     secure: NODE_ENV === 'production',
     maxAge: 24 * 60 * 60 * 1000, // 1 day
     httpOnly: true,
-    sameSite: NODE_ENV === 'production' ? 'none' : 'lax',
-    domain: NODE_ENV === 'production' ? process.env.DOMAIN : undefined
+    sameSite: 'strict'
   },
   store: MongoStore.create({
     mongoUrl: MONGODB_URI,
-    ttl: 24 * 60 * 60, // 1 day - must match cookie maxAge
+    ttl: 14 * 24 * 60 * 60, // 14 days
     autoRemove: 'interval',
-    autoRemoveInterval: 60, // Minutes
-    touchAfter: 24 * 3600 // Lazy session update
+    autoRemoveInterval: 60 // Minutes
   })
 }));
 
