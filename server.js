@@ -5,9 +5,10 @@ const cors = require('cors');
 const crypto = require('crypto');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
-const mongoose = require('mongoose');
 const connectDB = require('./utils/db'); 
-require('dotenv').config();
+require('dotenv').config({ 
+  path: path.join(__dirname, 'utils', '.env') 
+});
 
 const app = express();
 
@@ -17,21 +18,17 @@ const MONGODB_URI = process.env.MONGO_URL;
 const NODE_ENV = process.env.NODE_ENV ;
 
 // Generate a strong 64-byte hex session secret if not provided in .env
-// const generateSessionSecret = () => {
-//   return crypto.randomBytes(64).toString('hex');
-// };
+const generateSessionSecret = () => {
+  return crypto.randomBytes(64).toString('hex');
+};
 
-const SESSION_SECRET = process.env.SESSION_SECRET ;
+const SESSION_SECRET = process.env.SESSION_SECRET || generateSessionSecret();
 
 // Log the generated secret (remove in production)
 if (!process.env.SESSION_SECRET) {
   console.log('\n🔑 Generated Session Secret:', SESSION_SECRET);
   console.log('⚠️ For production, set SESSION_SECRET in .env file instead!');
 }
-
-// Connect to MongoDB
-const startServer = async () => {
-  await connectDB();
 
 // Session Configuration
 app.use(session({
@@ -45,8 +42,10 @@ app.use(session({
     sameSite: 'strict'
   },
   store: MongoStore.create({
-    client: mongoose.connection.getClient(), 
-    ttl: 14 * 24 * 60 * 60
+    mongoUrl: MONGODB_URI,
+    ttl: 14 * 24 * 60 * 60, // 14 days
+    autoRemove: 'interval',
+    autoRemoveInterval: 60 // Minutes
   })
 }));
 
@@ -61,6 +60,9 @@ app.set('views', path.join(__dirname, 'views'));
 
 // Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Connect to MongoDB
+connectDB();
 
 // Health check route
 app.get('/api/health', (req, res) => {
@@ -102,10 +104,8 @@ app.use('/', uploadRoutes);
 app.use('/', profileRoutes);
 
 // Display all routes
-// if (NODE_ENV === 'development') {
-//     const expressListEndpoints = require('express-list-endpoints');
-//     console.log(expressListEndpoints(app));
-// }
+const expressListEndpoints = require('express-list-endpoints');
+console.log(expressListEndpoints(app));
 
 // Error-handling middleware
 app.use((err, req, res, next) => {
@@ -129,8 +129,5 @@ app.use((req, res) => {
 app.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT} in ${NODE_ENV} mode`);
 });
-};
-
-startServer().catch(err => console.error('Failed to start server:', err));
 
 module.exports = app;
