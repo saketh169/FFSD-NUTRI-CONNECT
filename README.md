@@ -15,7 +15,7 @@ The MVC application is deployed on the following platforms:
 
 ## Overview
 
-NutriConnect empowers users to achieve their fitness and wellness goals through personalized meal plans, professional consultations, and seamless nutrition tracking. Built with the **MVC (Model-View-Controller)** architecture, the platform ensures modular, scalable, and user-friendly development. It fosters effective communication between users, dietitians, admins, and organizations, providing educational resources and intuitive interfaces for informed dietary choices.
+NutriConnect empowers users to achieve their fitness and wellness goals through personalized meal plans, professional consultations, and seamless nutrition tracking. Built with the **MVC (Model-View-Controller)** architecture, the platform ensures modular, scalable, and user-friendly development. It fosters effective communication between users, dietitians, admins, and organizations, providing  resources and intuitive interfaces for informed dietary choices.
 
 ### Business Model
 - **B2B**: Admins collaborate with dietitians and organizations to manage consultations and professional onboarding/verification.
