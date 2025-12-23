@@ -157,6 +157,7 @@ exports.userSignin = async (req, res) => {
         }
 
         req.session.user = { id: user._id, role: 'user', email: user.email, name: user.name };
+        req.session.save();
         res.status(200).json({
             success: true,
             message: 'User sign-in successful',
@@ -193,6 +194,7 @@ exports.adminSignin = async (req, res) => {
         }
 
         req.session.admin = { id: admin._id, role: 'admin', email: admin.email, name: admin.name };
+        req.session.save();
         res.status(200).json({
             success: true,
             message: 'Admin sign-in successful',
@@ -224,6 +226,7 @@ exports.dietitianSignin = async (req, res) => {
         }
 
         req.session.dietitian = { id: dietitian._id, role: 'dietitian', email: dietitian.email, name: dietitian.name };
+        req.session.save();
         res.status(200).json({
             success: true,
             message: 'Dietitian sign-in successful',
@@ -255,6 +258,7 @@ exports.organizationSignin = async (req, res) => {
         }
 
         req.session.organization = { id: organization._id, role: 'organization', email: organization.email, org_name: organization.org_name };
+        req.session.save();
         res.status(200).json({
             success: true,
             message: 'Organization sign-in successful',
