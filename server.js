@@ -12,7 +12,7 @@ require('dotenv').config({
 const app = express();
 
 // Trust proxy for production (required for Vercel, Heroku, etc.)
-app.set('trust proxy', 1);
+// app.set('trust proxy', 1);
 
 // Use environment variables
 const PORT = process.env.PORT
@@ -20,11 +20,11 @@ const MONGODB_URI = process.env.MONGODB_URL;
 const NODE_ENV = process.env.NODE_ENV ;
 
 // Generate a strong 64-byte hex session secret if not provided in .env
-const generateSessionSecret = () => {
-  return crypto.randomBytes(64).toString('hex');
-};
+// const generateSessionSecret = () => {
+//   return crypto.randomBytes(64).toString('hex');
+// };
 
-const SESSION_SECRET = process.env.SESSION_SECRET || generateSessionSecret();
+const SESSION_SECRET = process.env.SESSION_SECRET ;
 
 // Log the generated secret (remove in production)
 if (!process.env.SESSION_SECRET) {
