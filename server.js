@@ -44,15 +44,15 @@ app.use(session({
     secure: NODE_ENV === 'production',
     maxAge: 24 * 60 * 60 * 1000, // 1 day
     httpOnly: true,
-    sameSite: NODE_ENV === 'production',
-    domain: NODE_ENV === 'production'
+    sameSite: NODE_ENV === 'production' ? 'none' : 'lax',
+    domain: NODE_ENV === 'production' ? process.env.DOMAIN : undefined
   },
   store: MongoStore.create({
     mongoUrl: MONGODB_URI,
-    ttl: 24 * 60 * 60,
+    ttl: 24 * 60 * 60, // 1 day - must match cookie maxAge
     autoRemove: 'interval',
     autoRemoveInterval: 60, // Minutes
-    touchAfter: 24 * 3600 
+    touchAfter: 24 * 3600 // Lazy session update
   })
 }));
 
