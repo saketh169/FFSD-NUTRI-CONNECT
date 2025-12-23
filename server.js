@@ -14,7 +14,7 @@ const app = express();
 
 // Use environment variables
 const PORT = process.env.PORT
-const MONGODB_URI = process.env.MONGO_URL;
+const MONGODB_URI = process.env.MONGODB_URL;
 const NODE_ENV = process.env.NODE_ENV ;
 
 // Generate a strong 64-byte hex session secret if not provided in .env
