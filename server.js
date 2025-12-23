@@ -6,9 +6,7 @@ const crypto = require('crypto');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const connectDB = require('./utils/db'); 
-require('dotenv').config({ 
-  path: path.join(__dirname, 'utils', '.env') 
-});
+require('dotenv').config();
 
 const app = express();
 
@@ -18,11 +16,11 @@ const MONGODB_URI = process.env.MONGO_URL;
 const NODE_ENV = process.env.NODE_ENV ;
 
 // Generate a strong 64-byte hex session secret if not provided in .env
-const generateSessionSecret = () => {
-  return crypto.randomBytes(64).toString('hex');
-};
+// const generateSessionSecret = () => {
+//   return crypto.randomBytes(64).toString('hex');
+// };
 
-const SESSION_SECRET = process.env.SESSION_SECRET || generateSessionSecret();
+const SESSION_SECRET = process.env.SESSION_SECRET ;
 
 // Log the generated secret (remove in production)
 if (!process.env.SESSION_SECRET) {
@@ -104,8 +102,10 @@ app.use('/', uploadRoutes);
 app.use('/', profileRoutes);
 
 // Display all routes
-const expressListEndpoints = require('express-list-endpoints');
-console.log(expressListEndpoints(app));
+// if (NODE_ENV === 'development') {
+//     const expressListEndpoints = require('express-list-endpoints');
+//     console.log(expressListEndpoints(app));
+// }
 
 // Error-handling middleware
 app.use((err, req, res, next) => {
