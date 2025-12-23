@@ -12,6 +12,8 @@ require('dotenv').config({
 
 const app = express();
 
+app.set('trust proxy', 1);
+
 // Use environment variables
 const PORT = process.env.PORT
 const MONGODB_URI = process.env.MONGODB_URL;
