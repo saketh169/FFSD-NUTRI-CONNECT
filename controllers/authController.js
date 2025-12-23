@@ -359,13 +359,3 @@ exports.organizationDashboard = async (req, res) => {
         res.status(500).json({ success: false, message: 'Server error', error: err.message });
     }
 };
-
-exports.logout = (req, res) => {
-    req.session.destroy((err) => {
-        if (err) {
-            return res.status(500).json({ success: false, message: 'Logout failed' });
-        }
-        res.clearCookie('sessionId');
-        res.status(200).json({ success: true, message: 'Logged out successfully' });
-    });
-};

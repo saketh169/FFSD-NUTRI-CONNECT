@@ -18,9 +18,6 @@ authRouter.post('/signin/admin', authController.adminSignin);
 authRouter.post('/signin/dietitian', authController.dietitianSignin);
 authRouter.post('/signin/organization', authController.organizationSignin);
 
-// Logout route
-authRouter.post('/logout', authController.logout);
-
 // Dashboard routes
 authRouter.get('/user_dash', ensureAuthenticated, authController.userDashboard);
 authRouter.get('/admin_dash', ensureAuthenticated, authController.adminDashboard);

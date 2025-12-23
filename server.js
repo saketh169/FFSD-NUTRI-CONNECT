@@ -4,8 +4,7 @@ const path = require('path');
 const cors = require('cors');
 const crypto = require('crypto');
 const session = require('express-session');
-const MongoStore = require('connect-mongo');
-const connectDB = require('./utils/db'); 
+const MongoStore = require('connect-mongo');const connectDB = require('./utils/db'); 
 require('dotenv').config({ 
   path: path.join(__dirname, 'utils', '.env') 
 });
@@ -13,7 +12,7 @@ require('dotenv').config({
 const app = express();
 
 // Trust proxy for production (required for Vercel, Heroku, etc.)
-app.set('trust proxy', 1);
+// app.set('trust proxy', 1);
 
 // Use environment variables
 const PORT = process.env.PORT
@@ -45,15 +44,15 @@ app.use(session({
     secure: NODE_ENV === 'production',
     maxAge: 24 * 60 * 60 * 1000, // 1 day
     httpOnly: true,
-    sameSite: NODE_ENV === 'production' ? 'none' : 'lax',
-    domain: NODE_ENV === 'production' ? process.env.DOMAIN : undefined
+    sameSite: NODE_ENV === 'production',
+    domain: NODE_ENV === 'production'
   },
   store: MongoStore.create({
     mongoUrl: MONGODB_URI,
-    ttl: 24 * 60 * 60, // 1 day - must match cookie maxAge
+    ttl: 24 * 60 * 60,
     autoRemove: 'interval',
     autoRemoveInterval: 60, // Minutes
-    touchAfter: 24 * 3600 // Lazy session update
+    touchAfter: 24 * 3600 
   })
 }));
 
